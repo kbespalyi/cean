@@ -1,0 +1,69 @@
+version: "3"
+
+services:
+  cean-service:
+    image: kbespalyi/cean-api-server
+    environment:
+      - NODE_ENV=production
+    ports:
+      - "3000:3000"
+    expose:
+      - "3000"
+    links:
+      - couchbase
+    networks:
+      - front-tier
+      - back-tier
+    depends_on:
+      - couchbase
+
+  couchbase:
+    #image: arungupta/couchbase-node
+    image: couchbase
+    volumes:
+      - "db-data:/var/lib/couchbase/data"
+    #environment:
+    #  - MEMORY_QUOTA=25
+    #  - INDEX_MEMORY_QUOTA=256
+    #  - FTS_MEMORY_QUOTA=256
+    #  - SERVICES="kv,n1ql,index,fts"
+    #deploy:
+    #  replicas: 1
+    ports:
+      - 8091:8091
+      - 8092:8092
+      - 8093:8093
+      - 8094:8094
+      - 11210:11210
+    networks:
+      - back-tier
+
+  website:
+    image: php:apache
+    volumes:
+      - ./frontend/dist:/var/www/html
+    ports:
+      - "127.0.0.1:80:80"
+    expose:
+      - "80"
+    networks:
+      - front-tier
+      - back-tier
+    depends_on:
+      - cean-service
+
+volumes:
+  db-data:
+
+networks:
+  front-tier:
+  back-tier:
+
+#  clean:
+#    extends:
+#      service: staging
+#    command: rm -rf node_modules
+#  install:
+#    extends:
+#      service: staging
+#    command: npm install --silent

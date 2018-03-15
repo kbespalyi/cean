@@ -1,0 +1,17 @@
+{
+    "couchbase": {
+        "server": {
+          "production": "172.19.0.2:8091",
+          "local": "127.0.0.1:9091",
+          "dev": "couchbase://localhost"
+        },
+        "bucket": "default"
+    },
+    "backend": {
+      "host": "127.0.0.1",
+      "port": 3000,
+      "routes": {
+        "cors": true
+      }
+    }
+}
