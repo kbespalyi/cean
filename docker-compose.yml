@@ -28,10 +28,18 @@ services:
     volumes:
       - "db-data:/var/lib/couchbase/data"
     environment:
+      - CLUSTER=localhost
+      - PORT=8091
       - MEMORY_QUOTA=25
       - INDEX_MEMORY_QUOTA=256
       - FTS_MEMORY_QUOTA=256
       - SERVICES="kv,n1ql,index,fts"
+      - RAMSIZEMB=512
+      - RAMSIZEINDEXMB=256
+      - RAMSIZEFTSMB=256
+      - BUCKETS=default
+      - BUCKETSIZES=256
+      - AUTOREBALANCE=true
     deploy:
       replicas: 1
     ports:
