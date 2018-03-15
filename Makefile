@@ -11,7 +11,7 @@ ci-local:
 		local-run
 
 docker-build:
-	docker build -f Dockerfile --build-arg PORT=3000 -t kbespalyi/cean-api-server .
+	docker build -f Dockerfile --build-arg PORT=5400 -t kbespalyi/cean-api-server .
 clean:
 	#docker-compose -f docker-compose.yml run --rm clean
 install:
@@ -24,7 +24,7 @@ staging-down:
 	docker-compose -f docker-compose.yml down
 
 local-run:
-	docker run -p 80:3000 --env-file .env kbespalyi/cean-api-server node ./src/server.js
+	docker run -p 80:5400 --env-file .env kbespalyi/cean-api-server node ./src/server.js
 
 couchbase-start:
 	docker run -d --name db -p 8091-8094:8091-8094 -p 11210:11210 couchbase

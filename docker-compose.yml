@@ -2,13 +2,19 @@ version: "3"
 
 services:
   cean-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PORT: 5400
     image: kbespalyi/cean-api-server
     environment:
       - NODE_ENV=production
+      - PORT=5400
     ports:
-      - "3000:3000"
+      - "127.0.0.1:5400:5400"
     expose:
-      - "3000"
+      - "5400"
     links:
       - couchbase
     networks:
@@ -18,17 +24,16 @@ services:
       - couchbase
 
   couchbase:
-    #image: arungupta/couchbase-node
     image: couchbase
     volumes:
       - "db-data:/var/lib/couchbase/data"
-    #environment:
-    #  - MEMORY_QUOTA=25
-    #  - INDEX_MEMORY_QUOTA=256
-    #  - FTS_MEMORY_QUOTA=256
-    #  - SERVICES="kv,n1ql,index,fts"
-    #deploy:
-    #  replicas: 1
+    environment:
+      - MEMORY_QUOTA=25
+      - INDEX_MEMORY_QUOTA=256
+      - FTS_MEMORY_QUOTA=256
+      - SERVICES="kv,n1ql,index,fts"
+    deploy:
+      replicas: 1
     ports:
       - 8091:8091
       - 8092:8092
@@ -46,6 +51,11 @@ services:
       - "127.0.0.1:80:80"
     expose:
       - "80"
+    environment:
+      - apiUrl=http://cean-service:5400
+      - NODE_ENV=production
+    links:
+      - cean-service
     networks:
       - front-tier
       - back-tier

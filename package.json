@@ -8,9 +8,9 @@
   "main": "server.js",
   "private": true,
   "scripts": {
-    "build": "docker build -f Dockerfile --build-arg PORT=3000 -t kbespalyi/cean-api-server .",
+    "build": "docker build -f Dockerfile --build-arg PORT=5400 -t kbespalyi/cean-api-server .",
     "start": "node ./src/server.js",
-    "docker-start": "docker run -d --restart on-failure -p 80:3000 --build-arg PORT=3000 --env-file .env kbespalyi/cean-api-server node ./src/server.js",
+    "docker-start": "docker run -d --restart on-failure -p 80:5400 --build-arg PORT=5400 --env-file .env kbespalyi/cean-api-server node ./src/server.js",
     "test": "echo \"Error: no test specified\" && exit 0",
     "prepush": "#make ci",
     "postinstall": "#bower install && gulp build"

@@ -59,6 +59,8 @@
 
 <script>
   import axios from "axios";
+  const production = true;
+  const apiAddress = production ? "http://127.0.0.1:5400" : "http://localhost:5400";
   export default {
       name: 'app',
       data() {
@@ -79,17 +81,17 @@
           }
       },
       mounted() {
-          axios({ method: "GET", url: "http://localhost:3000/people" }).then(result => {
+          axios({ method: "GET", url: apiAddress + "/people" }).then(result => {
               this.people = result.data;
           });
-          axios({ method: "GET", url: "http://localhost:3000/addresses" }).then(result => {
+          axios({ method: "GET", url: apiAddress + "/addresses" }).then(result => {
               this.addresses = result.data;
           });
       },
       methods: {
           createPerson() {
               if(this.input.person.firstname != "" && this.input.person.lastname != "") {
-                  axios({ method: "POST", url: "http://localhost:3000/person", data: this.input.person, headers: { "content-type": "application/json" }}).then(result => {
+                  axios({ method: "POST", url: apiAddress + "/person", data: this.input.person, headers: { "content-type": "application/json" }}).then(result => {
                       this.people.push(result.data);
                       this.input.person.firstname = "";
                       this.input.person.lastname = "";
@@ -98,7 +100,7 @@
           },
           createAddress() {
               if(this.input.address.city != "" && this.input.address.state != "") {
-                  axios({ method: "POST", url: "http://localhost:3000/address", data: this.input.address, headers: { "content-type": "application/json" }}).then(result => {
+                  axios({ method: "POST", url: apiAddress + "/address", data: this.input.address, headers: { "content-type": "application/json" }}).then(result => {
                       this.addresses.push(result.data);
                       this.input.address.city = "";
                       this.input.address.state = "";
@@ -107,13 +109,13 @@
           },
           linkAddress(personid) {
               if(this.input.addressid != undefined && personid != "") {
-                  axios({ method: "PUT", url: "http://localhost:3000/person/address/" + personid, data: { addressid: this.input.addressid }, headers: { "content-type": "application/json" }}).then(result => {
+                  axios({ method: "PUT", url: apiAddress + "/person/address/" + personid, data: { addressid: this.input.addressid }, headers: { "content-type": "application/json" }}).then(result => {
                       for(let i = 0; i < this.people.length; i++) {
                           if(this.people[i].id == personid) {
                               if(this.people[i].addresses == undefined) {
                                   this.people[i].addresses = [];
                               }
-                              axios({ method: "GET", url: "http://localhost:3000/address/" + this.input.addressid }).then(result => {
+                              axios({ method: "GET", url: apiAddress + "/address/" + this.input.addressid }).then(result => {
                                   this.people[i].addresses.push(result.data);
                                   this.input.addressid = "";
                               });
