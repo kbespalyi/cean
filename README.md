@@ -44,7 +44,13 @@ docker inspect cean_website_1
 
 
 # USING Heroku service
+heroku login
+heroku git:remote -a cean-api-server
+git push heroku master
+heroku logs -t -p web.1 -a cean-api-server
 
+heroku local web
+heroku local ps:stop web
 
 
 # USING Kubernetes Cluster on Docker for Mac 18.01 using Swarm CLI
