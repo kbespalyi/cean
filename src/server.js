@@ -1,5 +1,5 @@
 const CIRCLECI = process.env.CIRCLECI;
-CIRCLECI===true && console.log('Test in CircleCI');
+CIRCLECI==='true' && console.log('Test in CircleCI');
 
 let NODE_ENV = process.env.NODE_ENV;
 if (!NODE_ENV) {
@@ -47,27 +47,26 @@ if (process.env.PORT && !isNaN(parseInt(process.env.PORT))) {
 let COUCHBASE_USER = process.env.COUCHBASE_USER;
 let COUCHBASE_PASS = process.env.COUCHBASE_PASS;
 
-if (NODE_ENV === 'test' && CIRCLECI===true) {
+if (NODE_ENV === 'test' && CIRCLECI==='true') {
   if (!COUCHBASE_USER) {
     COUCHBASE_USER = 'admin';
-    process.env.COUCHBASE_USER = COUCHBASE_USER;
   }
 
   if (!COUCHBASE_PASS) {
     COUCHBASE_PASS = 'admin001*';
-    process.env.COUCHBASE_PASS = COUCHBASE_PASS;
   }
 } else {
   if (!COUCHBASE_USER) {
     COUCHBASE_USER = 'Administrator';
-    process.env.COUCHBASE_USER = COUCHBASE_USER;
   }
 
   if (!COUCHBASE_PASS) {
     COUCHBASE_PASS = 'password';
-    process.env.COUCHBASE_PASS = COUCHBASE_PASS;
   }
 }
+
+process.env.COUCHBASE_USER = COUCHBASE_USER;
+process.env.COUCHBASE_PASS = COUCHBASE_PASS;
 
 const server = new Hapi.Server({
   connections: {
