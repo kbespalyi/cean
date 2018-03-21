@@ -34,9 +34,15 @@ jobs:
           name: "Starting couchbase"
           command: |
             docker pull mdavidallen/couchbase:latest
-            docker run -d --name hosdock -p 8090-8099:8090-8099 -p 9110:9110 -p 11210:11210 -p 18091:18091 -p 18092:18092 mdavidallen/couchbase:latest
+            docker run -d --name couchtest -p 8090-8099:8090-8099 -p 9110:9110 -p 11210:11210 -p 18091:18091 -p 18092:18092 mdavidallen/couchbase:latest
             sleep 20
-            curl --retry 20 --retry-delay 10 -v http://172.19.0.2:8091/pools/default/buckets -C -
+            docker logs --tail=200 couchtest 2>&1 | tee $CIRCLE_ARTIFACTS/docker.log
+            sleep 10
+            curl --retry 20 --retry-delay 10 -v http://localhost:8091/pools/default/buckets -C -
+          environment:
+            IMAGE_NAME: couchbase
+            COUCHBASE_PORT_8091_TCP_ADDR: localhost
+            COUCHBASE_PORT_8091_TCP_PORT: 8091
       - run:
           name: Install npm
           command: npm install
