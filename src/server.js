@@ -74,7 +74,9 @@ const bucket = cluster.openBucket(couchbase.uri.bucket, '', (err) => {
   if (err) {
     console.error('Got error: %j', err);
   } else {
-    console.log('Couchbase connected.');
+    if (NODE_ENV !== 'test') {
+      console.log('Couchbase connected.');
+    }
   }
 });
 
