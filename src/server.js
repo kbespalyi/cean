@@ -12,6 +12,18 @@ if (fs.existsSync('./.env')) {
   require('dotenv').config();
 }
 
+const P = require('bluebird');
+P.onPossiblyUnhandledRejection(() => {});
+P.config({
+  // Enable cancellation.
+  cancellation: true,
+  // Enable long stack traces. WARNING this adds very high overhead!
+  longStackTraces: false,
+  monitoring: true,
+  // Enable warnings.
+  warnings: false
+});
+
 const Hapi = require("hapi");
 const Inert = require('inert');
 const Good = require('good');
@@ -52,12 +64,13 @@ module.exports = server;
 
 server.connection(config.backend);
 
-console.log('Database url: ', config.couchbase.server[NODE_ENV]);
+const couchbase = config.couchbase.server[NODE_ENV];
+console.log('Database url: ', couchbase.uri);
 
-const cluster = new Couchbase.Cluster(config.couchbase.server[NODE_ENV]);
+const cluster = new Couchbase.Cluster(couchbase.uri);
 cluster.authenticate(COUCHBASE_USER, COUCHBASE_PASS);
 
-const bucket = cluster.openBucket(config.couchbase.bucket, '', function(err) {
+const bucket = cluster.openBucket(couchbase.uri.bucket, '', (err) => {
   if (err) {
     console.error('Got error: %j', err);
   } else {
@@ -67,12 +80,13 @@ const bucket = cluster.openBucket(config.couchbase.bucket, '', function(err) {
 
 server.app.bucket = bucket;
 server.app.config = config;
+server.app.NODE_ENV = NODE_ENV;
 
 const routes = new AppRouter(server);
 
 bucket.manager().createPrimaryIndex(() => {
 
-  bucket.on("error", error => {
+  bucket.on('error', error => {
       throw error;
   });
 
@@ -92,52 +106,82 @@ bucket.manager().createPrimaryIndex(() => {
       });
     } else {
       console.log('Got result: %j', result.value);
-      bucket.query(N1qlQuery.fromString('SELECT * FROM default WHERE $1 in interests LIMIT 1'),
-      ['African Swallows'],
-      function (err, rows) {
-        if (err) {
-          throw err;
-        }
-        console.log("Got rows: %j", rows.length);
-      });
+      bucket.query(
+        N1qlQuery.fromString('SELECT * FROM default WHERE $1 in interests LIMIT 1'),
+        ['African Swallows'],
+        function (err, rows) {
+          if (err) {
+            throw err;
+          }
+          console.log("Got rows: %j", rows.length);
+        });
     }
   });
 });
 
-const provision = async () => {
+const provision = async (cb) => {
 
-  server.register.attributes = {
-    pkg: {
-        name: "CEAN",
-        version: "1.0.0"
+  if (!server.app.started) {
+    server.register.attributes = {
+      pkg: {
+          name: "CEAN",
+          version: "1.0.0"
+      }
     }
+
+    await server.register(Inert);
+
+    server.register({
+        register: Good,
+        options: {
+            reporters: {
+                console: [{
+                    module: 'good-squeeze',
+                    name: 'Squeeze',
+                    args: [{
+                        response: '*',
+                        log: '*'
+                    }]
+                }, {
+                    module: 'good-console'
+                }, 'stdout']
+            }
+        }
+    });
+
+    await routes.init();
   }
 
-  await server.register(Inert);
-
-  server.register({
-      register: Good,
-      options: {
-          reporters: {
-              console: [{
-                  module: 'good-squeeze',
-                  name: 'Squeeze',
-                  args: [{
-                      response: '*',
-                      log: '*'
-                  }]
-              }, {
-                  module: 'good-console'
-              }, 'stdout']
-          }
-      }
-  });
-
-  await routes.init();
+  // start the web server
   await server.start();
 
-  server.log('info', `Server running at: ${server.info.uri}`);
+  if (NODE_ENV !== 'test') {
+    server.log('info', `Server running at: ${server.info.uri}`);
+  }
+
+  if (cb) {
+    cb(server);
+  }
+
+  server.app.started = true;
 
 };
 
-provision();
+server.app.startRestApp = (cb) => {
+  provision(cb);
+}
+
+if (NODE_ENV !== 'test') {
+
+  provision();
+
+  // listen on SIGINT signal and gracefully stop the server
+  process.on('SIGINT', () => {
+    console.log('Stopping hapi server...');
+    server.stop({ timeout: 10000 })
+      .then((err) => {
+        console.log('Server stopped!')
+        process.exit((err) ? 1 : 0)
+      })
+  });
+}

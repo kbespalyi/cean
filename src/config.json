@@ -1,18 +1,29 @@
 {
-    "couchbase": {
-        "server": {
-          "production": "couchbase://172.19.0.2:8091",
-          "local": "127.0.0.1:9091",
-          "test": "couchbase://172.19.0.2:8091",
-          "dev": "couchbase://localhost"
-        },
+  "couchbase": {
+    "server": {
+      "production": {
+        "uri": "couchbase://172.19.0.2:8091",
         "bucket": "default"
-    },
-    "backend": {
-      "host": "127.0.0.1",
-      "port": 5400,
-      "routes": {
-        "cors": true
+      },
+      "local": {
+        "uri": "127.0.0.1:9091",
+        "bucket": "default"
+      },
+      "test": {
+        "uri": "couchbase://172.19.0.2:8091",
+        "bucket": "test"
+      },
+      "dev": {
+        "uri": "couchbase://localhost",
+        "bucket": "default"
       }
     }
+  },
+  "backend": {
+    "host": "127.0.0.1",
+    "port": 5400,
+    "routes": {
+      "cors": true
+    }
+  }
 }
