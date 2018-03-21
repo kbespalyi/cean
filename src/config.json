@@ -6,12 +6,12 @@
         "bucket": "default"
       },
       "local": {
-        "uri": "127.0.0.1:9091",
+        "uri": "couchbase://localhost",
         "bucket": "default"
       },
       "test": {
-        "uri": "couchbase://localhost:8091",
-        "bucket": "test"
+        "uri": "couchbase://localhost",
+        "bucket": "default"
       },
       "dev": {
         "uri": "couchbase://localhost",

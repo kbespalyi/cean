@@ -1,3 +1,6 @@
+const CIRCLECI = process.env.CIRCLECI;
+CIRCLECI===true && console.log('Test in CircleCI');
+
 let NODE_ENV = process.env.NODE_ENV;
 if (!NODE_ENV) {
   NODE_ENV = 'local';
@@ -8,8 +11,11 @@ console.log('Environment: ', process.env.NODE_ENV);
 
 const path = require('path');
 const fs = require('fs');
-if (fs.existsSync('./.env')) {
-  require('dotenv').config();
+
+if (NODE_ENV === 'local') {
+  if (fs.existsSync('./.env')) {
+    require('dotenv').config();
+  }
 }
 
 const P = require('bluebird');
@@ -39,15 +45,28 @@ if (process.env.PORT && !isNaN(parseInt(process.env.PORT))) {
 }
 
 let COUCHBASE_USER = process.env.COUCHBASE_USER;
-if (!COUCHBASE_USER) {
-  COUCHBASE_USER = 'Administrator';
-  process.env.COUCHBASE_USER = COUCHBASE_USER;
-}
-
 let COUCHBASE_PASS = process.env.COUCHBASE_PASS;
-if (!COUCHBASE_PASS) {
-  COUCHBASE_PASS = 'password';
-  process.env.COUCHBASE_PASS = COUCHBASE_PASS;
+
+if (NODE_ENV === 'test' && CIRCLECI===true) {
+  if (!COUCHBASE_USER) {
+    COUCHBASE_USER = 'admin';
+    process.env.COUCHBASE_USER = COUCHBASE_USER;
+  }
+
+  if (!COUCHBASE_PASS) {
+    COUCHBASE_PASS = 'admin001*';
+    process.env.COUCHBASE_PASS = COUCHBASE_PASS;
+  }
+} else {
+  if (!COUCHBASE_USER) {
+    COUCHBASE_USER = 'Administrator';
+    process.env.COUCHBASE_USER = COUCHBASE_USER;
+  }
+
+  if (!COUCHBASE_PASS) {
+    COUCHBASE_PASS = 'password';
+    process.env.COUCHBASE_PASS = COUCHBASE_PASS;
+  }
 }
 
 const server = new Hapi.Server({
@@ -74,9 +93,7 @@ const bucket = cluster.openBucket(couchbase.uri.bucket, '', (err) => {
   if (err) {
     console.error('Got error: %j', err);
   } else {
-    if (NODE_ENV !== 'test') {
-      console.log('Couchbase connected.');
-    }
+    NODE_ENV === 'test' || console.log('Couchbase connected.');
   }
 });
 
@@ -103,9 +120,7 @@ bucket.manager().createPrimaryIndex(() => {
         if (err) {
           throw err;
         } else {
-          if (NODE_ENV !== 'test') {
-            console.log('Got result: %j', result.value);
-          }
+          NODE_ENV === 'test' || console.log('Got result: %j', result.value);
         }
       });
     } else {
@@ -119,9 +134,7 @@ bucket.manager().createPrimaryIndex(() => {
           if (err) {
             throw err;
           }
-          if (NODE_ENV !== 'test') {
-            console.log("Got rows: %j", rows.length);
-          }
+          NODE_ENV === 'test' || console.log("Got rows: %j", rows.length);
         });
     }
   });
@@ -163,9 +176,7 @@ const provision = async (cb) => {
   // start the web server
   await server.start();
 
-  if (NODE_ENV !== 'test') {
-    server.log('info', `Server running at: ${server.info.uri}`);
-  }
+  NODE_ENV === 'test' || server.log('info', `Server running at: ${server.info.uri}`);
 
   if (cb) {
     cb(server);
