@@ -4,7 +4,6 @@ jobs:
     working_directory: ~/cean-server
     docker:
       - image: circleci/node:9.1.0
-      - image: mongo:3.4.10
     parallelism: 1
     steps:
       - checkout
@@ -37,7 +36,7 @@ jobs:
             docker pull mdavidallen/couchbase:latest
             docker run -d --name hosdock -p 8090-8099:8090-8099 -p 9110:9110 -p 11210:11210 -p 18091:18091 -p 18092:18092 mdavidallen/couchbase:latest
             sleep 20
-            curl --retry 20 --retry-delay 10 -v http://localhost:8091/pools/default/buckets -C -
+            curl --retry 20 --retry-delay 10 -v http://172.19.0.2:8091/pools/default/buckets -C -
       - run:
           name: Install npm
           command: npm install
