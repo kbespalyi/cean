@@ -37,7 +37,7 @@ module.exports = () => {
       if (config.couchbase && config.couchbase.server) {
         const couchbase = config.couchbase.server[process.env.NODE_ENV];
         if (couchbase) {
-          if (couchbase.uri !== 'couchbase://localhost' || couchbase.bucket !== 'default') {
+          if (couchbase.uri !== '127.0.0.1:8091' || couchbase.bucket !== 'default') {
             throw new Error('Invalid DB config');
           }
         } else {
