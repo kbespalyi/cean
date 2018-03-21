@@ -9,14 +9,21 @@ jobs:
       - checkout
       - setup_remote_docker:
           docker_layer_caching: true
-      - run:
-          name: "Checking Versions"
-          command: |
-            node --version
-            npm --version
       #- run:
       #    name: Update npm
       #    command: 'sudo npm install -g npm@latest'
+      - run:
+          name: "Checking Versions"
+          command: |
+            npm set progress=false
+            node --version
+            npm --version
+            if [ -z "$(npm info $(npm ls --depth=-1 2>/dev/null | head -1 | cut -f 1 -d " ") 2>/dev/null)" ] ; then
+              echo "version number is fine";
+            else
+              echo "Please update version number in package.json!"
+              exit 1;
+            fi
       - restore_cache:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
@@ -35,10 +42,6 @@ jobs:
           command: |
             docker pull mdavidallen/couchbase:latest
             docker run -d --name couchtest -p 8090-8099:8090-8099 -p 9110:9110 -p 11210:11210 -p 18091:18091 -p 18092:18092 mdavidallen/couchbase:latest
-            sleep 20
-            docker logs --tail=200 couchtest 2>&1
-            sleep 10
-#            curl --retry 20 --retry-delay 10 -v http://127.0.0.1:8091/pools/default/buckets -C -
           environment:
             IMAGE_NAME: couchbase
             COUCHBASE_PORT_8091_TCP_ADDR: localhost
@@ -50,6 +53,12 @@ jobs:
           key: dependency-cache-{{ checksum "package.json" }}
           paths:
             - node_modules
+      - run:
+          name: "Test couchbase"
+          command: |
+            docker logs --tail=200 couchtest 2>&1
+            sleep 20
+            curl --retry 20 --retry-delay 10 -v http://127.0.0.1:8091/pools/default/buckets -C - | python -mjson.tool > $CIRCLE_ARTIFACTS/buckets-after.log
       - run:
           name: Test
           command: npm test
