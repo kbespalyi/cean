@@ -10,7 +10,7 @@
         "bucket": "default"
       },
       "test": {
-        "uri": "couchbase://172.19.0.2:8091",
+        "uri": "couchbase://localhost:8091",
         "bucket": "test"
       },
       "dev": {
