@@ -101,11 +101,15 @@ bucket.manager().createPrimaryIndex(() => {
         if (err) {
           throw err;
         } else {
-          console.log('Got result: %j', result.value);
+          if (NODE_ENV !== 'test') {
+            console.log('Got result: %j', result.value);
+          }
         }
       });
     } else {
-      console.log('Got result: %j', result.value);
+      if (NODE_ENV !== 'test') {
+        console.log('Got result: %j', result.value);
+      }
       bucket.query(
         N1qlQuery.fromString('SELECT * FROM default WHERE $1 in interests LIMIT 1'),
         ['African Swallows'],
@@ -113,7 +117,9 @@ bucket.manager().createPrimaryIndex(() => {
           if (err) {
             throw err;
           }
-          console.log("Got rows: %j", rows.length);
+          if (NODE_ENV !== 'test') {
+            console.log("Got rows: %j", rows.length);
+          }
         });
     }
   });
