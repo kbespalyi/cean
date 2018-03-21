@@ -23,21 +23,21 @@ jobs:
             - dependency-cache-{{ checksum "package.json" }}
             - dependency-cache- # used if checksum fails
       - run:
-        name: "Docker install"
-        command: |
-          sudo curl -L -o /usr/bin/docker 'https://s3-external-1.amazonaws.com/circle-downloads/docker-1.9.1-circleci'
-          sudo chmod 0755 /usr/bin/docker
+          name: "Docker install"
+          command: |
+            sudo curl -L -o /usr/bin/docker 'https://s3-external-1.amazonaws.com/circle-downloads/docker-1.9.1-circleci'
+            sudo chmod 0755 /usr/bin/docker
       - run:
-        name: "Starting docker"
-        command: |
-          docker info >/dev/null 2>&1 || service docker start
+          name: "Starting docker"
+          command: |
+            docker info >/dev/null 2>&1 || service docker start
       - run:
-        name: "Starting couchbase"
-        command: |
-          docker pull mdavidallen/couchbase:latest
-          docker run -d --name hosdock -p 8091:8091 -p 8092:8092 -p 8093:8093 -p 11210:11210 mdavidallen/couchbase:latest
-          sleep 20
-          $ curl --retry 20 --retry-delay 10 -v http://localhost:8091/pools/default/buckets -C -
+          name: "Starting couchbase"
+          command: |
+            docker pull mdavidallen/couchbase:latest
+            docker run -d --name hosdock -p 8091:8091 -p 8092:8092 -p 8093:8093 -p 11210:11210 mdavidallen/couchbase:latest
+            sleep 20
+            $ curl --retry 20 --retry-delay 10 -v http://localhost:8091/pools/default/buckets -C -
       - run:
           name: Install npm
           command: npm install
