@@ -1,3 +1,5 @@
+# Resource: https://github.com/moxious/couchbase-docker-circleci.git
+
 # couchbase-docker-circleci
 
 A template project / proof of concept for how to run Couchbase inside of Docker on CircleCI.
@@ -8,7 +10,7 @@ This project is based on couchbase's community docker 4.0.0 image.  This can be 
 
 # Setting up your Docker Image
 
-To configure your docker image, adjust settings in `Dockerfile` and in `init.sh`, which is the script that is 
+To configure your docker image, adjust settings in `Dockerfile` and in `init.sh`, which is the script that is
 run inside of the docker container, configuring the cluster.
 
 By default, the cluster in this project has one small membase bucket called `default`.  The cluster runs the
