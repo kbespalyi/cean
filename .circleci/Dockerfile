@@ -1,4 +1,4 @@
-FROM couchbase/server:community-4.0.0
+FROM couchbase/server
 
 MAINTAINER moxious
 

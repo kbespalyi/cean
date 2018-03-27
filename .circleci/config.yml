@@ -10,6 +10,8 @@ jobs:
       COUCHBASE_HOST: localhost
       COUCHBASE_PORT: 8091
       DOCKER_REPO: mdavidallen
+      ADMIN_LOGIN: admin
+      ADMIN_PASSWORD: admin001*
     steps:
       - checkout
       - setup_remote_docker:
@@ -48,7 +50,7 @@ jobs:
       - run:
           name: "Starting couchbase"
           command: |
-            docker build -t $IMAGE_NAME:$CIRCLE_BUILD_NUM .
+            docker build -t $IMAGE_NAME:$CIRCLE_BUILD_NUM .circleci/
             docker run -d --name couchtest -p 8090-8099:8090-8099 -p 9110:9110 -p 11210:11210 -p 18091:18091 -p 18092:18092 -t $IMAGE_NAME:$CIRCLE_BUILD_NUM
             # docker pull mdavidallen/couchbase:latest
             # docker run -d --name couchtest -p 8090-8099:8090-8099 -p 9110:9110 -p 11210:11210 -p 18091:18091 -p 18092:18092 mdavidallen/couchbase:latest
