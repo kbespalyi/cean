@@ -1,7 +1,6 @@
 version: 2
 jobs:
   build:
-    machine: true
     working_directory: ~/cean-server
     docker:
       - image: circleci/node:9.1.0
@@ -20,6 +19,27 @@ jobs:
       - store_artifacts:
           path: ~/cean-server/couchbase.log
           destination: artifact-file
+      - run:
+          name: "Install Docker client"
+          command: |
+            sudo curl -L -o /usr/bin/docker 'https://s3-external-1.amazonaws.com/circle-downloads/docker-1.9.1-circleci'
+            sudo chmod 0755 /usr/bin/docker
+      - run:
+          name: "Starting docker"
+          command: |
+            docker info >/dev/null 2>&1 || service docker start
+      - run:
+          name: "Starting couchbase"
+          command: |
+            # docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker build -t $IMAGE_NAME:$CIRCLE_BUILD_NUM .circleci/
+            docker run -d --name couchtest -p 8090-8099:8090-8099 -p 9110:9110 -p 11210:11210 -p 18091:18091 -p 18092:18092 -t $IMAGE_NAME:$CIRCLE_BUILD_NUM
+            # docker pull mdavidallen/couchbase:latest
+            # docker run -d --name couchtest -p 8090-8099:8090-8099 -p 9110:9110 -p 11210:11210 -p 18091:18091 -p 18092:18092 mdavidallen/couchbase:latest
+            sleep 60
+            # A running cluster will respond with cluster status.
+            # docker logs --tail=200 couchtest > ~/cean-server/couchbase.log
+            docker logs --tail=200 couchtest
       #- run:
       #    name: Update npm
       #    command: 'sudo npm install -g npm@latest'
@@ -39,25 +59,6 @@ jobs:
           keys:
             - dependency-cache-{{ checksum "package.json" }}
             - dependency-cache- # used if checksum fails
-      - run:
-          name: "Docker install"
-          command: |
-            sudo curl -L -o /usr/bin/docker 'https://s3-external-1.amazonaws.com/circle-downloads/docker-1.9.1-circleci'
-            sudo chmod 0755 /usr/bin/docker
-      - run:
-          name: "Starting docker"
-          command: |
-            docker info >/dev/null 2>&1 || service docker start
-      - run:
-          name: "Starting couchbase"
-          command: |
-            docker build -t $IMAGE_NAME:$CIRCLE_BUILD_NUM .circleci/
-            docker run -d --name couchtest -p 8090-8099:8090-8099 -p 9110:9110 -p 11210:11210 -p 18091:18091 -p 18092:18092 -t $IMAGE_NAME:$CIRCLE_BUILD_NUM
-            # docker pull mdavidallen/couchbase:latest
-            # docker run -d --name couchtest -p 8090-8099:8090-8099 -p 9110:9110 -p 11210:11210 -p 18091:18091 -p 18092:18092 mdavidallen/couchbase:latest
-            sleep 60
-            # A running cluster will respond with cluster status.
-            docker logs --tail=200 couchtest > ~/cean-server/couchbase.log
       - run:
           name: Install npm
           command: npm install
