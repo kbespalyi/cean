@@ -28,6 +28,10 @@ jobs:
           name: Artifacts directory creation
           command: mkdir -p ~/cean-server/artifacts && mkdir -p ~/cean-server/test-results
       - run:
+          name: "Test mongodb"
+          command: |
+            curl -X GET --retry 5 --retry-delay 10 -v http://localhost:27017
+      - run:
           name: "Install Docker client"
           command: |
             sudo curl -L -o /usr/bin/docker 'https://s3-external-1.amazonaws.com/circle-downloads/docker-1.10.0-circleci'
