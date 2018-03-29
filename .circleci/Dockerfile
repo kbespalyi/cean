@@ -1,13 +1,11 @@
 FROM couchbase/server
 
-MAINTAINER moxious
+MAINTAINER couchbase-hos
 
-ENV ADMIN_LOGIN=admin \
-    ADMIN_PASSWORD=admin001* \
-    LCB_LOGLEVEL=5 \
+ENV LCB_LOGLEVEL=5 \
     LCB_OPTIONS=detailed_errcodes=1
 
-#HEALTHCHECK --interval=5s --timeout=3s CMD curl --fail http://localhost:8091/pools || exit 1
+HEALTHCHECK --interval=5s --timeout=3s CMD curl --fail http://$COUCHBASE_HOST:$COUCHBASE_PORT/pools || exit 1
 
 COPY init.sh /
 RUN chmod +x /init.sh
@@ -25,4 +23,5 @@ ENTRYPOINT ["/init.sh"]
 # 18093: Query services (SSL) (4.0+)
 # 18094: Full-text Search (SSL) (4.5+)
 EXPOSE 8091 8092 8093 8094 11207 11210 11211 18091 18092 18093 18094
+
 VOLUME /opt/couchbase/var
