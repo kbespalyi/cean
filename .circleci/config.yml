@@ -43,7 +43,7 @@ jobs:
           name: "Create docker-couchbase networks"
           command: |
             docker network create couchbase
-            docker create --name my-nginx --network couchbase --publish 8091:8091 nginx:latest
+            docker create --name my-nginx --net=couchbase --publish 8091:8091 nginx:latest
             docker network connect couchbase my-nginx
       - run:
           name: "Starting couchbase"
