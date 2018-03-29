@@ -3,8 +3,8 @@ jobs:
   build:
     working_directory: ~/cean-server
     docker:
-      - image: node:9.8.0
       - image: mongo:3.2.17
+      - image: node:9.8.0
     parallelism: 1
     environment:
       IMAGE_NAME: couchbase
