@@ -1,4 +1,4 @@
-FROM couchbase/server
+FROM mdavidallen/couchbase:latest
 
 MAINTAINER couchbase-hos
 
