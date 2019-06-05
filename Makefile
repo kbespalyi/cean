@@ -27,7 +27,7 @@ local-run:
 	docker run -p 80:5400 --env-file .env kbespalyi/cean-api-server node ./src/server.js
 
 couchbase-start:
-	docker run -d --name db -p 8091-8094:8091-8094 -p 11210:11210 couchbase
+	docker run -d --name couchtest --env-file .env -p 8091-8094:8091-8094 -p 9110:9110 -p 11207-11211:11207-11211 -p 18091-18094:18091-18094 -t ${IMAGE_NAME}:${CIRCLE_BUILD_NUM}
 
 herokuci:
 	make link \

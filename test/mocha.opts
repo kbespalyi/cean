@@ -1,4 +1,6 @@
 --ui bdd
 --require test/tools/
 --check-leaks
+--globals errorMessage
+--exit
 --timeout 15000

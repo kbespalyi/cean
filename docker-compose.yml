@@ -10,48 +10,53 @@ services:
     image: kbespalyi/cean-api-server
     environment:
       - NODE_ENV=production
+      - COUCHBASE_HOST=database
+      - COUCHBASE_BUCKET=default
+      - COUCHBASE_PORT=8091
+      - CLUSTER_USERNAME=admin
+      - CLUSTER_PASSWORD=admin001*
       - PORT=5400
     ports:
       - "127.0.0.1:5400:5400"
     expose:
       - "5400"
     links:
-      - couchbase
+      - database
     networks:
       - front-tier
       - back-tier
     depends_on:
-      - couchbase
+      - database
 
-  couchbase:
-    image: couchbase
-    volumes:
-      - "db-data:/var/lib/couchbase/data"
-    environment:
-      - CLUSTER=localhost
-      - PORT=8091
-      - MEMORY_QUOTA=25
-      - INDEX_MEMORY_QUOTA=256
-      - FTS_MEMORY_QUOTA=256
-      - SERVICES="kv,n1ql,index,fts"
-      - RAMSIZEMB=512
-      - RAMSIZEINDEXMB=256
-      - RAMSIZEFTSMB=256
-      - BUCKETS=default
-      - BUCKETSIZES=256
-      - AUTOREBALANCE=true
-    deploy:
-      replicas: 1
-    ports:
-      - 8091:8091
-      - 8092:8092
-      - 8093:8093
-      - 8094:8094
-      - 11210:11210
-    networks:
-      - back-tier
+  #couchbase:
+  #  image: couchbase
+  #  volumes:
+  #    - "db-data:/var/lib/couchbase/data"
+  #  environment:
+  #    - CLUSTER=localhost
+  #    - PORT=8091
+  #    - MEMORY_QUOTA=25
+  #    - INDEX_MEMORY_QUOTA=256
+  #    - FTS_MEMORY_QUOTA=256
+  #    - SERVICES="kv,n1ql,index,fts"
+  #    - RAMSIZEMB=512
+  #    - RAMSIZEINDEXMB=256
+  #    - RAMSIZEFTSMB=256
+  #    - BUCKETS=default
+  #    - BUCKETSIZES=256
+  #    - AUTOREBALANCE=true
+  #  deploy:
+  #    replicas: 1
+  #  ports:
+  #    - 8091:8091
+  #    - 8092:8092
+  #    - 8093:8093
+  #    - 8094:8094
+  #    - 11210:11210
+  #  networks:
+  #    - back-tier
 
-  couchbase-server:
+  database:
     image: bentonam/couchbase-docker:enterprise-5.0.1
     container_name: couchbase
     ports:
@@ -59,16 +64,20 @@ services:
       - 11210-11211:11210-11211
     environment:
       NODE_TYPE: DEFAULT
-      CLUSTER_USERNAME: Administrator
-      CLUSTER_PASSWORD: password
+      COUCHBASE_HOST: localhost
+      COUCHBASE_BUCKET: default
+      COUCHBASE_PORT: 8091
+      CLUSTER_USERNAME: admin
+      CLUSTER_PASSWORD: admin001*
       SERVICES: data,index,query
       CLUSTER_RAMSIZE: 500
       BUCKET: default
       ENABLE_FLUSH: 1
-      RBAC_USERNAME: example_user
-      RBAC_PASSWORD: password
-      RBAC_ROLES: admin
-      SAMPLE_BUCKETS: travel-sample
+      RBAC_USERNAME: example
+      RBAC_PASSWORD: 123456
+      RBAC_ROLES: bucket_full_access[default]
+    networks:
+      - back-tier
 
   website:
     image: php:apache
@@ -88,6 +97,7 @@ services:
       - back-tier
     depends_on:
       - cean-service
+    #restart: always
 
 volumes:
   db-data:
