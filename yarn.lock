@@ -1352,9 +1352,9 @@ handlebars@^4.1.2:
   optionalDependencies:
     uglify-js "^3.1.4"
 
-hapi@16.0.0:
-  version "16.0.0"
-  resolved "https://registry.yarnpkg.com/hapi/-/hapi-16.0.0.tgz#9216e643c52882838fe3dfe81de13d31d6cb70de"
+hapi@16.1.1:
+  version "16.1.1"
+  resolved "https://registry.yarnpkg.com/hapi/-/hapi-16.1.1.tgz#0466db0703ba15cd00f07175ccf394d9cb56b1e0"
   dependencies:
     accept "2.x.x"
     ammo "2.x.x"
