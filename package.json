@@ -46,7 +46,8 @@
     "mocha": "^6.1.4",
     "mocha-circleci-reporter": "^0.0.3",
     "mocha-unfunk-reporter": "^0.4.0",
-    "nyc": "^14.1.1"
+    "nyc": "^14.1.1",
+    "stringstream": "0.0.6"
   },
   "repository": {
     "type": "git",
