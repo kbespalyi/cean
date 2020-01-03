@@ -13,10 +13,15 @@
     "docker-start": "docker run -d --restart on-failure -p 80:5400 --build-arg PORT=5400 --env-file .env kbespalyi/cean-api-server node ./src/server.js",
     "test": "DB=couchbase NODE_ENV=test ./node_modules/.bin/nyc mocha -R spec test/tests/**/*.js test/tests/**/**/*.js test/tests/**/**/**/*.js ",
     "test-staging": "DB=couchbase NODE_ENV=test mocha -R spec test/tests/**/*.js test/tests/**/**/*.js test/tests/**/**/**/*.js ",
-    "precommit": "npm run test-staging",
-    "prepush": "#make ci",
     "postinstall": "#bower install && gulp build"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "yarn run test-staging",
+      "pre-push": "#make ci",
+      "post-install": "#bower install && gulp build"
+    }
+  },  
   "options": {
     "mocha": "--require ./resources/mocha-bootload --check-leaks --full-trace --timeout 15000 test/tests/**/*.js"
   },
