@@ -2,7 +2,9 @@
 const path = require('path')
 const utils = require('./utils')
 const config = require('../config')
-const vueLoaderConfig = require('./vue-loader.conf')
+const VueLoaderPlugin = require('vue-loader/lib/plugin')
+const VueLoaderConfig = require('./vue-loader.conf')
+//const nodeExternals = require('webpack-node-externals')
 
 function resolve (dir) {
   return path.join(__dirname, '..', dir)
@@ -29,17 +31,40 @@ module.exports = {
       '@': resolve('src'),
     }
   },
+  //target: 'node',
+  //externals: [nodeExternals()],
   module: {
     rules: [
       {
         test: /\.vue$/,
         loader: 'vue-loader',
-        options: vueLoaderConfig
+        options: VueLoaderConfig
       },
       {
         test: /\.js$/,
-        loader: 'babel-loader',
-        include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client')]
+        include: [resolve('src'), resolve('test'), resolve('node_modules/webpack-dev-server/client')],
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: [
+              '@babel/preset-env',
+              '@vue/babel-preset-jsx'
+            ],
+            plugins: [
+              '@babel/plugin-proposal-object-rest-spread',
+              '@babel/transform-arrow-functions',
+              '@babel/plugin-transform-runtime',
+              '@babel/plugin-syntax-jsx',
+              '@babel/syntax-export-extensions',
+              '@babel/plugin-syntax-dynamic-import',
+              '@babel/plugin-proposal-class-properties',
+              '@babel/plugin-proposal-json-strings',
+              '@babel/plugin-syntax-import-meta',
+              ['@babel/plugin-proposal-pipeline-operator', { 'proposal': 'minimal' }]
+            ]
+          }
+        }
+        //loader: 'babel-loader',
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
@@ -67,6 +92,10 @@ module.exports = {
       }
     ]
   },
+  plugins: [
+    // make sure to include the plugin for the magic
+    new VueLoaderPlugin()
+  ],
   node: {
     // prevent webpack from injecting useless setImmediate polyfill because Vue
     // source contains it (although only uses it if it's native).
