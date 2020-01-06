@@ -47,9 +47,10 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: [
-              '@babel/preset-env',
-              '@vue/babel-preset-jsx'
+              "@babel/preset-env",
+              "@vue/babel-preset-jsx",
             ],
+            sourceType: 'unambiguous',
             plugins: [
               '@babel/plugin-proposal-object-rest-spread',
               '@babel/transform-arrow-functions',
@@ -60,11 +61,11 @@ module.exports = {
               '@babel/plugin-proposal-class-properties',
               '@babel/plugin-proposal-json-strings',
               '@babel/plugin-syntax-import-meta',
-              ['@babel/plugin-proposal-pipeline-operator', { 'proposal': 'minimal' }]
+              ['@babel/plugin-proposal-pipeline-operator', { 'proposal': 'minimal' }],
+              '@vue/babel-plugin-transform-vue-jsx'
             ]
           }
         }
-        //loader: 'babel-loader',
       },
       {
         test: /\.(png|jpe?g|gif|svg)(\?.*)?$/,
