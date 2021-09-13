@@ -48,7 +48,7 @@
     "querystringify": "^2.0.0",
     "handlebars": "^4.5.3",
     "serialize-javascript": "^2.1.2",
-    "set-value": "^3.0.1",
+    "set-value": "^4.0.1",
     "mixin-deep": "^2.0.1",
     "mem": "^6.0.1"
   },
