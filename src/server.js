@@ -201,45 +201,50 @@ Couchbase.connect(couchbaseConfig.uri, {
     await cluster.queryIndexes().createPrimaryIndex(
       couchbaseConfig.bucket,
       { ignoreIfExists: true },
-      async () => {  
+      async () => {
+
+        await P.delay(100);
+
         let result;
 
-        !isDebug || server.log('info', 'Testing data...');
+        !isDebug || server.log('info', 'DB: Testing data...');
 
         try {
           result = await collection.get('user:king_arthur');
-          if (!result || !result.content) {
-            try {
-              result = await collection.upsert(
-                'user:king_arthur', {
-                  'email': 'kingarthur@couchbase.com',
-                  'interests': ['Holy Grail', 'African Swallows']
-                },
-                { timeout: 5 * 1000}
-              );
-
-              !isDebug || server.log('info', `Got result: ${JSON.stringify(result.content)}`);
-            } catch(err2) {
-              server.log('error', err2);
-            }
-          } else {
-            !isDebug || server.log('info', `Got result: ${JSON.stringify(result.content)}`);
-            try {
-              result = await cluster.query(
-                'SELECT * FROM default WHERE $1 in interests LIMIT 1',
-                { parameters: ['African Swallows'] }
-              );
-
-              !isDebug || server.log('info',`Got rows: ${result.rows.length}`);
-            } catch(err2) {
-              server.log('error', err2);
-            }
-          }
         } catch (err) {
+          result = null;
+        }
+
+        if (!result || !result.content) {
+          try {
+            result = await collection.upsert(
+              'user:king_arthur', {
+                'email': 'kingarthur@couchbase.com',
+                'interests': ['Holy Grail', 'African Swallows']
+              },
+              { timeout: 5 * 1000}
+            );
+
+            !isDebug || server.log('info',`DB: Created the test record...`);
+          } catch(err) {
+            server.log('error', err);
+          }
+        } else {
+          !isDebug || server.log('info', `DB: Retrieved the test record: ${JSON.stringify(result.content)}`);
+        }
+
+        try {
+          result = await cluster.query(
+            'SELECT * FROM default WHERE $1 in interests LIMIT 1',
+            { parameters: ['African Swallows'] }
+          );
+
+          !isDebug || server.log('info',`DB: Retrieved the test rows: ${result.rows.length}`);
+        } catch(err) {
           server.log('error', err);
         }
 
-        !isDebug || server.log('info', 'Testing has done.');
+        !isDebug || server.log('info', 'DB: Testing has done.');
       }
     );
   }
