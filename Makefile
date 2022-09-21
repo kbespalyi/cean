@@ -24,7 +24,7 @@ staging-down:
 	docker-compose -f docker-compose.yml down
 
 local-run:
-	docker run -p 80:5400 --env-file .env kbespalyi/cean-api-server node ./src/server.js
+	docker run -p 80:5400 --env-file .env kbespalyi/cean-api-server `DB=couchbase node ./src/server.js`
 
 couchbase-start:
 	docker run -d --name couchtest --env-file .env -p 8091-8094:8091-8094 -p 9110:9110 -p 11207-11211:11207-11211 -p 18091-18094:18091-18094 -t ${IMAGE_NAME}:${CIRCLE_BUILD_NUM}
@@ -38,6 +38,6 @@ link:
 unlink:
 	heroku plugins:uninstall heroku-docker
 patch:
-	npm version patch
+	yarn version patch
 	git push
-	npm publish
+	yarn publish

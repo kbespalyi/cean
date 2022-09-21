@@ -10,15 +10,22 @@ https://blog.couchbase.com/containerize-node-js-application-communicates-couchba
 CREATE PRIMARY INDEX ON `default` USING GSI;
 
 # - change port to by default
-"/Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin/couchbase-cli" setting-cluster -c localhost:8091 --username Administrator --password password --cluster-port=9091
+>"/Applications/Couchbase Server.app/Contents/Resources/couchbase-core/bin/couchbase-cli" setting-cluster -c localhost:8091 --username Administrator --password password --cluster-port=9091
+
+# Get access to couchbase console
+>cbq -u Administrator -p password -e "http://localhost:9091"
+# Create the primary index
+cbq> CREATE PRIMARY INDEX ON `default` USING GSI;
+cbq> SELECT * FROM default LIMIT 1;
+cbq> \QUIT;
 
 # Front-end desing using Vue CLI: https://github.com/vuejs-templates/webpack
 
 vue init webpack frontend
 cd frontend
-npm run dev
-npm run build
-npm start
+yarn run dev
+yarn run build
+yarn start
 
 
 # Docker, compose

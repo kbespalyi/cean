@@ -37,7 +37,7 @@ module.exports = () => {
       if (config.couchbase && config.couchbase.server) {
         const couchbase = config.couchbase.server[process.env.NODE_ENV];
         if (couchbase) {
-          if (couchbase.uri !== '127.0.0.1:8091' || couchbase.bucket !== 'default') {
+          if (couchbase.uri !== 'couchbase://localhost' || couchbase.bucket !== 'default') {
             throw new Error('Invalid DB config');
           }
         } else {
@@ -56,11 +56,11 @@ module.exports = () => {
 
       output.config = config;
     } else {
-      console.dir(output.config);
+      throw new Error('No found the config.json');
     }
 
-    return output
-      .p()
+    return output.p()
+      .delay(100)
       .then(() => output.startServer())
       .then((_server) => {
         return _server;
@@ -70,8 +70,7 @@ module.exports = () => {
       });
   };
 
-  output.standardTearDown = (_server) => output
-    .p()
+  output.standardTearDown = (_server) => output.p()
     .then(() => {
       if (_server) {
         _server
@@ -90,7 +89,7 @@ module.exports = () => {
     .then(() => {
       output.server = null;
     })
-    .catch(err => {
+    .catch((err) => {
       throw new Error(err);
     });
 

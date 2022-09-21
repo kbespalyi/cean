@@ -1,4 +1,4 @@
-FROM node:9.1.0 AS build
+FROM node:12 AS build
 
 ARG PORT=5400
 
@@ -30,17 +30,17 @@ USER $USER
 
 # Install NPM packages first
 ADD ./package.json $APP_HOME/package.json
-ADD ./package-lock.json $APP_HOME/package-lock.json
+ADD ./yarn.lock $APP_HOME/yarn.lock
 ADD ./.env $APP_HOME/.env
 
 #RUN rm -rf node_modules
 #COPY $DIR/node_modules $APP_HOME/node_modules
 
-RUN npm install --silent
+RUN yarn install --silent
 
 #HEALTHCHECK --interval=5s \
 #            --timeout=5s \
 #            --retries=6 \
 #            CMD curl -fs http://localhost:$PORT/_health || exit 1
 
-CMD ["npm", "start"]
+CMD ["yarn", "start"]

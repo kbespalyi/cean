@@ -12,43 +12,42 @@ chai.use(require('chai-things'));
 
 const t = require(path.resolve('./test/tools'))();
 
-describe('Test users', () => {
+describe('Test users', async () => {
   let _server;
 
-  beforeEach((done) => {
-    t.standardSetup()
+  beforeEach(async () => {
+    await t.standardSetup()
       .then((server) => {
         _server = server;
-        done();
       })
       .catch((err) => {
-        done(err);
+        throw err;
       });
   });
 
-  afterEach((done) => {
-    t.standardTearDown(_server)
+  afterEach(async () => {
+    await t.standardTearDown(_server)
     .then(() => {
       _server = null;
-      done();
     })
     .catch((err) => {
       _server = null;
-      done(err);
+      throw err;
     });
   });
 
-  it('should be able to connect to couchbase', (done) => {
+  it('should be able to connect to couchbase', async () => {
     let scope;
 
-    t.p().then((s) => {
+    await t.p().then((s) => {
       scope = s;
     })
     .then(() => {
-      done();
+      scope = null
     })
     .catch((err) => {
-      done(err);
+      scope = null
+      throw err;
     });
   });
 });

@@ -6,11 +6,11 @@
         "bucket": "default"
       },
       "local": {
-        "uri": "couchbase://localhost",
+        "uri": "http://127.0.0.1:9091/?query_timeout=2000",
         "bucket": "default"
       },
       "test": {
-        "uri": "127.0.0.1:8091",
+        "uri": "couchbase://localhost",
         "bucket": "default"
       },
       "dev": {

@@ -12,46 +12,45 @@ chai.use(require('chai-things'));
 
 const t = require(path.resolve('./test/tools'))();
 
-describe('Test environment', () => {
+describe('Test environment', async () => {
   let _server;
 
-  beforeEach((done) => {
-    t.standardSetup()
+  beforeEach(async () => {
+    await t.standardSetup()
       .then((server) => {
         _server = server;
-        done();
       })
       .catch((err) => {
-        done(err);
+        throw err;
       });
   });
 
-  afterEach((done) => {
-    t.standardTearDown(_server)
+  afterEach(async () => {
+    await t.standardTearDown(_server)
     .then(() => {
       _server = null;
-      done();
     })
     .catch((err) => {
       _server = null;
-      done(err);
+      throw err;
     });
   });
 
-  it('should be able to get NODE_ENV and dbconfig correct', (done) => {
+  it('should be able to get NODE_ENV and dbconfig correct', async () => {
     let scope;
 
-    t.p().then((s) => {
+    await t.p().then((s) => {
       scope = s;
     })
     .then(() => {
       expect(t.server.app.NODE_ENV).to.equals('test');
       expect(t.server.app.config).to.deep.equal(t.config);
 
-      done();
+      scope = null;
     })
     .catch((err) => {
-      done(err);
+      scope = null;
+      throw err;
     });
   });
 });

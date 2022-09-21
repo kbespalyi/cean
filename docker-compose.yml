@@ -1,4 +1,4 @@
-version: "3"
+version: '3.2'
 
 services:
   cean-service:
@@ -113,4 +113,4 @@ networks:
 #  install:
 #    extends:
 #      service: staging
-#    command: npm install --silent
+#    command: yarn install --silent

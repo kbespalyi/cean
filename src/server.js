@@ -1,5 +1,7 @@
 const CIRCLECI = process.env.CIRCLECI;
-CIRCLECI==='true' && console.log('Test in CircleCI');
+const DEBUG = process.env.DEBUG;
+CIRCLECI === 'true' && console.log('Test in CircleCI');
+DEBUG === 'true' && console.log('Debug enabled');
 
 let NODE_ENV = process.env.NODE_ENV;
 if (!NODE_ENV) {
@@ -7,7 +9,7 @@ if (!NODE_ENV) {
   process.env.NODE_ENV = NODE_ENV;
 }
 
-console.log('Environment: ', process.env.NODE_ENV);
+console.log('Node environment:', process.env.NODE_ENV);
 
 const path = require('path');
 const fs = require('fs');
@@ -17,6 +19,9 @@ if (NODE_ENV === 'local') {
     require('dotenv').config();
   }
 }
+
+const isTest = (NODE_ENV === 'test' || CIRCLECI === 'true');
+const isDebug = (DEBUG === 'true');
 
 const P = require('bluebird');
 P.onPossiblyUnhandledRejection(() => {});
@@ -30,16 +35,17 @@ P.config({
   warnings: false
 });
 
-const Hapi = require("hapi");
-const Inert = require('inert');
-const Good = require('good');
-const UUID = require("uuid");
-const Couchbase = require("couchbase");
+const Hapi = require('@hapi/hapi');
+const Inert = require('@hapi/inert');
+const UUID = require('uuid');
+
+const Couchbase = require('couchbase');
 const N1qlQuery = Couchbase.N1qlQuery;
 
-const AppRouter = require("./routes/routes.js");
+const AppRouter = require('./routes/routes.js');
 
-const config = require("./config");
+const config = require('./config');
+
 if (process.env.PORT && !isNaN(parseInt(process.env.PORT))) {
   config.backend.port = parseInt(process.env.PORT);
 }
@@ -47,7 +53,7 @@ if (process.env.PORT && !isNaN(parseInt(process.env.PORT))) {
 let COUCHBASE_USER = process.env.COUCHBASE_USER;
 let COUCHBASE_PASS = process.env.COUCHBASE_PASS;
 
-if (NODE_ENV === 'test' && CIRCLECI==='true') {
+if (isTest) {
   if (!COUCHBASE_USER) {
     COUCHBASE_USER = 'admin';
   }
@@ -68,138 +74,192 @@ if (NODE_ENV === 'test' && CIRCLECI==='true') {
 process.env.COUCHBASE_USER = COUCHBASE_USER;
 process.env.COUCHBASE_PASS = COUCHBASE_PASS;
 
-const server = new Hapi.Server({
-  connections: {
-    routes: {
-      files: {
-          relativeTo: path.join(__dirname, (NODE_ENV === 'local' ? '../frontend/dist/' : 'website'))
+const connection = config.backend
+if (connection.routes) {
+  connection.routes.files = {
+    relativeTo: path.join(__dirname, (NODE_ENV === 'local' ? '../frontend/dist/' : 'website'))
+  }
+} else {
+  connection.routes = {
+    files: {
+      relativeTo: path.join(__dirname, (NODE_ENV === 'local' ? '../frontend/dist/' : 'website'))
+    }
+  }
+}
+if (isTest || NODE_ENV === 'local') {
+  connection.debug = {
+    request: ['error']
+  }
+}
+
+const server = new Hapi.Server(connection);
+const routes = new AppRouter(server);
+
+server.app.NODE_ENV = NODE_ENV;
+server.app.config = config;
+server.app.isDebug = isDebug;
+server.app.isTest = isTest;
+
+server.events.on('log', (event, tags) => {
+  if (tags.error) {
+    console.error(`Server error: ${event.error ? event.error.message : (event.data || 'unknown')}`);
+  } else if (tags.info) {
+    if (event.data && Array.isArray(event.data)) {
+      let message = ''
+      for (ms of event.data) {
+        message += ms
       }
+      console.warn(message);
+    } else {
+      console.warn(event.data || '');
     }
   }
 });
+
+/*
+server.events.on('error', (error) => {
+  server.log('error', error)
+  process.exit(1);
+});
+*/
 
 module.exports = server;
 
-server.connection(config.backend);
+const couchbaseConfig = config.couchbase.server[NODE_ENV];
+isTest || server.log('info', ['Connecting to database ', couchbaseConfig.uri]);
 
-const couchbase = config.couchbase.server[NODE_ENV];
-console.log('Database url: ', couchbase.uri);
+Couchbase.connect(couchbaseConfig.uri, {
+  username: COUCHBASE_USER,
+  password: COUCHBASE_PASS
+}, async (error, cluster) => {
 
-const cluster = new Couchbase.Cluster(couchbase.uri);
-cluster.authenticate(COUCHBASE_USER, COUCHBASE_PASS);
-
-const bucket = cluster.openBucket(couchbase.uri.bucket, '', (err) => {
-  if (err) {
-    console.error('Got error: %j', err);
-  } else {
-    NODE_ENV === 'test' || console.log('Couchbase connected.');
+  if (error) {
+    server.log('error', new Error('No connection to Couchbase'));
+    process.exit(1);
+    return;
   }
-});
 
-server.app.bucket = bucket;
-server.app.config = config;
-server.app.NODE_ENV = NODE_ENV;
+  if (server.app.bucket) {
+    return;
+  }
 
-const routes = new AppRouter(server);
+  const bucket = cluster.bucket(couchbaseConfig.bucket);  
+  const collection = bucket.defaultCollection();
+  
+  server.app.bucket = bucket;
+  server.app.cluster = cluster;
 
-bucket.manager().createPrimaryIndex(() => {
+  isTest || server.log('info', 'Couchbase connected!');
 
-  bucket.on('error', error => {
-      throw error;
-  });
+  const provision = async (cb) => {
 
-  bucket.operationTimeout = 5 * 1000;
-
-  bucket.get('user:king_arthur', function (err, result) {
-    if (err || !result || !result.value) {
-      bucket.upsert('user:king_arthur', {
-        'email': 'kingarthur@couchbase.com', 'interests': ['Holy Grail', 'African Swallows']
-      },
-      function (err, result) {
-        if (err) {
-          throw err;
-        } else {
-          NODE_ENV === 'test' || console.log('Got result: %j', result.value);
+    if (!server.app.started) {
+      server.register.attributes = {
+        pkg: {
+            name: "CEAN",
+            version: "2.0.0"
         }
-      });
-    } else {
-      if (NODE_ENV !== 'test') {
-        console.log('Got result: %j', result.value);
       }
-      bucket.query(
-        N1qlQuery.fromString('SELECT * FROM default WHERE $1 in interests LIMIT 1'),
-        ['African Swallows'],
-        function (err, rows) {
-          if (err) {
-            throw err;
-          }
-          NODE_ENV === 'test' || console.log("Got rows: %j", rows.length);
-        });
+  
+      await server.register(Inert);
+      await routes.init();
     }
-  });
-});
+  
+    // start the web server
+    isTest || server.log('info', 'Starting web-server...')
 
-const provision = async (cb) => {
+    try {
+      await server.start();
+      
+      isTest || server.log('info', `Server running at: ${server.info.uri}`);
+  
+      if (cb) {
+        cb(server);
+      }
+    
+      server.app.started = true;
 
-  if (!server.app.started) {
-    server.register.attributes = {
-      pkg: {
-          name: "CEAN",
-          version: "1.0.0"
+    } catch (error) {
+      if (error) {
+        server.log('error', new Error('Server not started!!'));
+        process.exit(1);
+        return;    
       }
     }
+  };
 
-    await server.register(Inert);
+  async function checkDatabase () {
+    await cluster.queryIndexes().createPrimaryIndex(
+      couchbaseConfig.bucket,
+      { ignoreIfExists: true },
+      async () => {  
+        let result;
 
-    server.register({
-        register: Good,
-        options: {
-            reporters: {
-                console: [{
-                    module: 'good-squeeze',
-                    name: 'Squeeze',
-                    args: [{
-                        response: '*',
-                        log: '*'
-                    }]
-                }, {
-                    module: 'good-console'
-                }, 'stdout']
+        !isDebug || server.log('info', 'Testing data...');
+
+        try {
+          result = await collection.get('user:king_arthur');
+          if (!result || !result.content) {
+            try {
+              result = await collection.upsert(
+                'user:king_arthur', {
+                  'email': 'kingarthur@couchbase.com',
+                  'interests': ['Holy Grail', 'African Swallows']
+                },
+                { timeout: 5 * 1000}
+              );
+
+              !isDebug || server.log('info', `Got result: ${JSON.stringify(result.content)}`);
+            } catch(err2) {
+              server.log('error', err2);
             }
+          } else {
+            !isDebug || server.log('info', `Got result: ${JSON.stringify(result.content)}`);
+            try {
+              result = await cluster.query(
+                'SELECT * FROM default WHERE $1 in interests LIMIT 1',
+                { parameters: ['African Swallows'] }
+              );
+
+              !isDebug || server.log('info',`Got rows: ${result.rows.length}`);
+            } catch(err2) {
+              server.log('error', err2);
+            }
+          }
+        } catch (err) {
+          server.log('error', err);
         }
-    });
 
-    await routes.init();
+        !isDebug || server.log('info', 'Testing has done.');
+      }
+    );
   }
+  
+  await checkDatabase();
 
-  // start the web server
-  await server.start();
-
-  NODE_ENV === 'test' || server.log('info', `Server running at: ${server.info.uri}`);
-
-  if (cb) {
-    cb(server);
+  if (isTest) {
+    server.app.startRestApp = (cb) => {
+      provision(cb);
+    }
+  } else {
+    provision();
   }
+});
 
-  server.app.started = true;
+process.on('unhandledRejection', (error) => {
+  console.log(error);
+  process.exit(1);
+});
 
-};
-
-server.app.startRestApp = (cb) => {
-  provision(cb);
-}
-
-if (NODE_ENV !== 'test') {
-
-  provision();
-
-  // listen on SIGINT signal and gracefully stop the server
-  process.on('SIGINT', () => {
-    console.log('Stopping hapi server...');
-    server.stop({ timeout: 10000 })
-      .then((err) => {
-        console.log('Server stopped!')
-        process.exit((err) ? 1 : 0)
-      })
-  });
-}
+// listen on SIGINT signal and gracefully stop the server
+process.on('SIGINT', () => {
+  if (server.app && server.app.cluster) {
+    server.app.cluster.close();
+  }
+  console.log('Stopping hapi server...');
+  server.stop({ timeout: 10000 })
+    .then((error) => {
+      console.log('Server stopped!')
+      process.exit((error) ? 1 : 0)
+    })
+});
