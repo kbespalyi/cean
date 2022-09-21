@@ -20,6 +20,7 @@ if (NODE_ENV === 'local') {
   }
 }
 
+const isLocal = (NODE_ENV === 'local');
 const isTest = (NODE_ENV === 'test' || CIRCLECI === 'true');
 const isDebug = (DEBUG === 'true');
 
@@ -61,13 +62,21 @@ if (isTest) {
   if (!COUCHBASE_PASS) {
     COUCHBASE_PASS = 'admin001*';
   }
-} else {
+} else if (isLocal) {
   if (!COUCHBASE_USER) {
     COUCHBASE_USER = 'Administrator';
   }
 
   if (!COUCHBASE_PASS) {
     COUCHBASE_PASS = 'password';
+  }
+} else {
+  if (!COUCHBASE_USER) {
+    COUCHBASE_USER = 'admin';
+  }
+
+  if (!COUCHBASE_PASS) {
+    COUCHBASE_PASS = 'admin001*';
   }
 }
 

@@ -14,7 +14,7 @@
         "bucket": "default"
       },
       "dev": {
-        "uri": "couchbase://localhost",
+        "uri": "http://localhost:8091/?query_timeout=2000",
         "bucket": "default"
       }
     }
