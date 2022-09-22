@@ -21,7 +21,7 @@ const isDebug = (DEBUG === 'true');
 const path = require('path');
 const fs = require('fs');
 
-if (fs.existsSync('./.env')) {
+if (!isDev && fs.existsSync('./.env')) {
   require('dotenv').config();
 }
 
