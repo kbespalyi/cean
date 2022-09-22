@@ -6,20 +6,18 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        PORT: 5400
+        PORT: 5200
     image: kbespalyi/cean-api-server
+    ports:
+      - "5200:5200"
+    expose:
+      - "5200"
     environment:
       - NODE_ENV=production
+      - PORT=5200
       - COUCHBASE_HOST=database
       - COUCHBASE_BUCKET=default
       - COUCHBASE_PORT=8091
-      - CLUSTER_USERNAME=admin
-      - CLUSTER_PASSWORD=admin001*
-      - PORT=5400
-    ports:
-      - "127.0.0.1:5400:5400"
-    expose:
-      - "5400"
     links:
       - database
     networks:
@@ -67,8 +65,6 @@ services:
       COUCHBASE_HOST: localhost
       COUCHBASE_BUCKET: default
       COUCHBASE_PORT: 8091
-      CLUSTER_USERNAME: admin
-      CLUSTER_PASSWORD: admin001*
       SERVICES: data,index,query
       CLUSTER_RAMSIZE: 500
       BUCKET: default
@@ -88,8 +84,8 @@ services:
     expose:
       - "80"
     environment:
-      - apiUrl=http://cean-service:5400
       - NODE_ENV=production
+      - apiUrl=http://127.0.0.1:5200
     links:
       - cean-service
     networks:

@@ -1,11 +1,11 @@
 FROM node:12 AS build
 
-ARG PORT=5400
+ARG PORT=5200
 
 RUN if [ "x$PORT" = "x" ] ; then echo The PORT argument not provided ; else echo The running port is $PORT ; fi
 
 ENV PORT=$PORT
-EXPOSE $PORT
+#EXPOSE $PORT
 
 ENV NODE_ENV production
 ENV NPM_CONFIG_LOGLEVEL warn

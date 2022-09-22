@@ -49,6 +49,10 @@ docker inspect cean_couchbase_1
 docker inspect cean_cean-service_1
 docker inspect cean_website_1
 
+# Test network
+
+1) docker run --name webtest --net=cean_back-tier -d nginx:alpine
+2) docker run --rm -it --net=cean_back-tier alpine ping -c 1 webtest
 
 # USING Heroku service
 heroku login

@@ -60,7 +60,7 @@
 <script>
 import axios from 'axios'
 const production = true
-const apiAddress = (production ? 'http://127.0.0.1:5400' : 'http://localhost:5400')
+const apiAddress = (production ? 'http://127.0.0.1:5200' : 'http://localhost:5200')
 
 export default {
   name: 'Recorder',

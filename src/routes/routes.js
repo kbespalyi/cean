@@ -75,7 +75,7 @@ class AppRouter {
       handler: async (request, h) => {
         const id = UUID.v4();
         let result;
-        console.log(this.collection)
+
         try {
           result = await this.collection.insert(id, request.payload);
         } catch(error) {

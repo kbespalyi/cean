@@ -47,7 +47,7 @@ module.exports = () => {
 
       const backend = config.backend;
       if (backend) {
-        if (backend.host !== '127.0.0.1' || backend.port !== 5400) {
+        if (backend.host !== '127.0.0.1' || backend.port !== 5200) {
           throw new Error('Invalid backend HOST or PORT');
         }
       } else {

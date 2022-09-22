@@ -3,20 +3,22 @@ ci:
 		clean \
 		install \
 		staging
-#		 \
-#		staging-down
+
+#		staging-down \
+#
 
 ci-local:
 	make docker-build \
 		local-run
 
 docker-build:
-	docker build -f Dockerfile --build-arg PORT=5400 -t kbespalyi/cean-api-server .
+	docker build -f Dockerfile --build-arg PORT=5200 -t kbespalyi/cean-api-server .
 clean:
 	#docker-compose -f docker-compose.yml run --rm clean
 install:
 	#docker-compose -f docker-compose.yml run --rm install
 staging:
+	docker-compose -f docker-compose.yml up -d cean-service
 	docker-compose -f docker-compose.yml up -d website
 staging-run:
 	docker-compose -f docker-compose.yml run --rm website
@@ -24,7 +26,7 @@ staging-down:
 	docker-compose -f docker-compose.yml down
 
 local-run:
-	docker run -p 80:5400 --env-file .env kbespalyi/cean-api-server `DB=couchbase node ./src/server.js`
+	docker run -p 80:5200 --env-file .env kbespalyi/cean-api-server `NODE_ENV=production node ./src/server.js`
 
 couchbase-start:
 	docker run -d --name couchtest --env-file .env -p 8091-8094:8091-8094 -p 9110:9110 -p 11207-11211:11207-11211 -p 18091-18094:18091-18094 -t ${IMAGE_NAME}:${CIRCLE_BUILD_NUM}

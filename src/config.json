@@ -2,7 +2,7 @@
   "couchbase": {
     "server": {
       "production": {
-        "uri": "couchbase://172.19.0.2:8091",
+        "uri": "couchbase://172.30.0.2:8091",
         "bucket": "default"
       },
       "local": {
@@ -14,14 +14,14 @@
         "bucket": "default"
       },
       "dev": {
-        "uri": "http://localhost:8091/?query_timeout=2000",
+        "uri": "couchbase://127.0.0.1:8091",
         "bucket": "default"
       }
     }
   },
   "backend": {
     "host": "127.0.0.1",
-    "port": 5400,
+    "port": 5200,
     "routes": {
       "cors": true
     }

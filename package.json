@@ -1,19 +1,21 @@
 {
   "name": "cean-api-server",
   "version": "2.0.0",
-  "description": "Server: Vue Demo Project",
+  "description": "Hapi Server: Vue Demo Project",
   "author": "Khusein Bespalyi <khusein.bespalyi@otolane.com>",
   "keywords": [],
   "license": "ISC",
   "main": "server.js",
   "private": true,
   "scripts": {
-    "build": "docker build -f Dockerfile --build-arg PORT=5400 -t kbespalyi/cean-api-server .",
+    "build": "docker build -f Dockerfile --build-arg PORT=5200 -t kbespalyi/cean-api-server .",
     "start": "node ./src/server.js",
-    "docker-start": "docker run -d --restart on-failure -p 80:5400 --build-arg PORT=5400 --env-file .env kbespalyi/cean-api-server DB=couchbase node ./src/server.js",
-    "test": "DB=couchbase NODE_ENV=test ./node_modules/.bin/nyc mocha --config test/.mocharc.jsonc -R spec test/tests/**/*.js test/tests/**/**/*.js test/tests/**/**/**/*.js ",
-    "test-staging": "DB=couchbase NODE_ENV=test mocha --config test/.mocharc.jsonc -R spec test/tests/**/*.js test/tests/**/**/*.js test/tests/**/**/**/*.js ",
-    "daemon": "node_modules/.bin/nodemon DB=couchbase ./src/server.js",
+    "start-dev": "NODE_ENV=dev DEBUG=true node ./src/server.js",
+    "start-prod": "NODE_ENV=production node ./src/server.js",
+    "test": "NODE_ENV=test ./node_modules/.bin/nyc mocha --config test/.mocharc.jsonc -R spec test/tests/**/*.js test/tests/**/**/*.js test/tests/**/**/**/*.js ",
+    "test-staging": "NODE_ENV=test mocha --config test/.mocharc.jsonc -R spec test/tests/**/*.js test/tests/**/**/*.js test/tests/**/**/**/*.js ",
+    "daemon": "node_modules/.bin/nodemon ./src/server.js",
+    "docker-start": "docker run -d --restart on-failure -p 80:5400 --env PORT=5200 --env-file .env kbespalyi/cean-api-server node ./src/server.js",
     "postinstall": "#bower install && gulp build"
   },
   "husky": {
