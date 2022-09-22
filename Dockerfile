@@ -31,7 +31,7 @@ USER $USER
 # Install NPM packages first
 ADD ./package.json $APP_HOME/package.json
 ADD ./yarn.lock $APP_HOME/yarn.lock
-ADD ./.env $APP_HOME/.env
+#ADD ./.env $APP_HOME/.env
 
 #RUN rm -rf node_modules
 #COPY $DIR/node_modules $APP_HOME/node_modules
